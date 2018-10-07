@@ -1,3 +1,4 @@
+import java.util.Objects;
 
 /**
  * class that forms a tile based game on a grid like connect 4.
@@ -15,8 +16,14 @@ public class ConnectN {
      * @param setHeight high setter
      */
     ConnectN(final int setWidth, final int setHeight) {
-        this.width = setWidth;
-        this.height = setHeight;
+        if (setWidth <= MAX_WIDTH && setWidth >= MIN_WIDTH) {
+            this.width = setWidth;
+            this.widthTF = true;
+        }
+        if (setHeight <= MAX_WIDTH && setHeight >= MIN_WIDTH) {
+            this.height = setHeight;
+            this.heightTF = true;
+        }
         counter++;
     }
     /**
@@ -25,9 +32,23 @@ public class ConnectN {
      * @param setN N setter
      */
     ConnectN(final int setWidth, final int setHeight, final int setN) {
-        this.width = setWidth;
-        this.height = setHeight;
-        this.n = setN;
+        if (setWidth <= MAX_WIDTH && setWidth >= MIN_WIDTH) {
+            this.width = setWidth;
+            this.widthTF = true;
+        }
+        if (setHeight <= MAX_WIDTH && setHeight >= MIN_WIDTH) {
+            this.height = setHeight;
+            this.heightTF = true;
+        }
+        if (this.width > this.height) {
+            if (setN >= MIN_N && setN < this.width && this.heightTF && this.widthTF) {
+                this.n = setN;
+            }
+        } else {
+            if (setN >= MIN_N && setN < this.height && this.heightTF && this.widthTF) {
+                this.n = setN;
+            }
+        }
         counter++;
     }
     /**
@@ -103,7 +124,7 @@ public class ConnectN {
     /**
      * ID for the instance / game.
      */
-    private int id;
+    private int id = counter - 1;
     //MISC
     /**
      * @return total number of games played.
@@ -190,13 +211,15 @@ public class ConnectN {
         if (this.width > this.height) {
             if (newN >= MIN_N && newN < this.width) {
                 this.n = newN;
+                return true;
             }
         } else {
             if (newN >= MIN_N && newN < this.height) {
                 this.n = newN;
+                return true;
             }
         }
-        return true;
+        return false;
     }
     //COMPARE BOARDS
     /**
@@ -204,7 +227,20 @@ public class ConnectN {
      * @return false if boards not equal
      */
     public static boolean compareBoards(final ConnectN... boards) {
-        return true;
+        int countThoseBoreds = 0;
+        if (boards.length == 0) {
+            return false;
+        }
+        for (int i = 1; i < boards.length; i++) {
+            ConnectN bored =  boards[i];
+            if (bored.equals(boards[i - 1])) {
+                countThoseBoreds++;
+            }
+        }
+        if (countThoseBoreds == boards.length - 1) {
+            return true;
+        }
+        return false;
     }
     /**
      * @param firstBoard is the first
@@ -212,10 +248,34 @@ public class ConnectN {
      * @return false if not equal
      */
     public static boolean compareBoards(final ConnectN firstBoard, final ConnectN secondBoard) {
-        if (firstBoard.id == secondBoard.id) {
+        if (firstBoard.equals(secondBoard)) {
             return true;
         }
         return false;
+    }
+    //EQUALITY
+    /**
+     * @param o object for equality checking
+     * @return false if id field is not equal
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ConnectN connectN = (ConnectN) o;
+        return id == connectN.id;
+    }
+    /**
+     * hashcode is responsible for the equality.
+     * @return integer for the hashcode
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
     //CREATE BOARDS
     /**
@@ -237,21 +297,6 @@ public class ConnectN {
     public static ConnectN[] createMany(final int number, final int setWidth, final int setHeight, final int setN) {
         ConnectN[] many = new ConnectN[number];
         return many;
-    }
-    //EQUALITY
-    /**
-     * @param obj object for equality checking
-     * @return false if id field is not equal
-     */
-    public boolean equals(final java.lang.Object obj) {
-        return true;
-    }
-    /**
-     * hashcode is responsible for the equality.
-     * @return integer for the hashcode
-     */
-    public final int hashCode() {
-        return 1;
     }
     //BOARD INTERACTIONS
     /**
