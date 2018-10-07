@@ -10,6 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://cs125.cs.illinois.edu/MP/3/">MP3 Documentation</a>
  */
 public class Player {
+    /**
+     * the global ID is set to 0.
+     */
     private static int globalID = 0;
 
     /** This player's name. */
