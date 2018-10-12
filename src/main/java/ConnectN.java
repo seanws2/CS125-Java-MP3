@@ -10,6 +10,7 @@ public class ConnectN {
      */
     public ConnectN() {
         counter++;
+        id = counter - 1;
     }
     /**
      * @param setWidth width setter
@@ -25,6 +26,7 @@ public class ConnectN {
             this.heightTF = true;
         }
         counter++;
+        id = counter - 1;
     }
     /**
      * @param setWidth width setter
@@ -43,28 +45,31 @@ public class ConnectN {
         if (this.width > this.height) {
             if (setN >= MIN_N && setN < this.width && this.heightTF && this.widthTF) {
                 this.n = setN;
+                this.nTF = true;
             }
         } else {
             if (setN >= MIN_N && setN < this.height && this.heightTF && this.widthTF) {
                 this.n = setN;
+                this.nTF = true;
             }
         }
         counter++;
+        id = counter - 1;
     }
     /**
      * @param otherBoard another instance of ConnectN class
      */
     ConnectN(final ConnectN otherBoard) {
         this.width = otherBoard.width;
+        this.widthTF = true;
         this.height = otherBoard.height;
+        this.heightTF = true;
         this.n = otherBoard.n;
+        this.nTF = true;
         counter++;
+        id = counter - 1;
     }
     //FIELDS
-    /**
-     * this is the board.
-     */
-    private Player[][] board;
     /**
      * player one.
      */
@@ -110,6 +115,10 @@ public class ConnectN {
      */
     private int n;
     /**
+     * this is the board.
+     */
+    Player[][] board = new Player[this.height][this.width];
+    /**
      * true if height is set.
      */
     private boolean heightTF = false;
@@ -118,13 +127,17 @@ public class ConnectN {
      */
     private boolean widthTF = false;
     /**
+     * true if n set.
+     */
+    private boolean nTF = false;
+    /**
      * true if game started.
      */
     private boolean gameOn = false;
     /**
      * ID for the instance / game.
      */
-    private int id = counter - 1;
+    private int id = 0;
     //MISC
     /**
      * @return total number of games played.
@@ -136,7 +149,7 @@ public class ConnectN {
      * @return current board's id
      */
     public int getID() {
-        return id;
+        return counter - 1;
     }
     //SET AND GET WIDTH
     /**
@@ -211,11 +224,13 @@ public class ConnectN {
         if (this.width > this.height) {
             if (newN >= MIN_N && newN < this.width) {
                 this.n = newN;
+                this.nTF = true;
                 return true;
             }
         } else {
             if (newN >= MIN_N && newN < this.height) {
                 this.n = newN;
+                this.nTF = true;
                 return true;
             }
         }
@@ -277,7 +292,7 @@ public class ConnectN {
     public int hashCode() {
         return Objects.hash(id);
     }
-    //CREATE BOARDS
+    //CREATE BOARDS factory static methods
     /**
      * @param setWidth the setter
      * @param setHeight the height setter
@@ -303,7 +318,7 @@ public class ConnectN {
      * @return a Player[][]
      */
     public Player[][] getBoard() {
-        return board;
+        return this.board;
     }
     /**
      * @param getX the x value on a 2d array
@@ -311,7 +326,7 @@ public class ConnectN {
      * @return a Player
      */
     public Player getBoardAt(final int getX, final int getY) {
-        return two;
+        return board[getX][getY];
     }
     /**
      * @param player will get the right game
@@ -320,7 +335,17 @@ public class ConnectN {
      * @return false if invalid
      */
     public boolean setBoardAt(final Player player, final int setX, final int setY) {
-        return true;
+        if (player == null || !this.widthTF || !this.heightTF || !this.nTF) {
+            return false;
+        }
+        for (int i = 0; i < width; i++) {
+            if (this.board[setX][i] == one || this.board[setX][i] == two) {
+                continue;
+            } else {
+                this.board[setX][i] = player;
+                return true;
+            }
+        }
     }
     /**
      * @param player gets the right game
@@ -328,7 +353,27 @@ public class ConnectN {
      * @return false if invalid
      */
     public boolean setBoardAt(final Player player, final int setX) {
-        return true;
+        int countN = 0;
+        if (player == null || !this.widthTF || !this.heightTF || !this.nTF) {
+            return false;
+        }
+        if (setX > this.height - 1 || setX < 0) {
+            return false;
+        }
+        for (int i = 0; i < width; i++) {
+            if (this.board[setX][i] == one || this.board[setX][i] == two) {
+                continue;
+            } else {
+                this.board[setX][i] = player;
+                this.gameOn = true;
+                return true;
+            }
+        }
+        for (int i = 0; i < this.board.length; i++) {
+            for (int j = 0; j < this.board[i].length; j++) {
+
+            }
+        }
     }
     //WINNER
     /**
