@@ -25,6 +25,7 @@ public class ConnectN {
             this.height = setHeight;
             this.heightTF = true;
         }
+        assignBoard();
         counter++;
         id = counter - 1;
     }
@@ -44,11 +45,13 @@ public class ConnectN {
         }
         if (this.width > this.height) {
             if (setN >= MIN_N && setN < this.width && this.heightTF && this.widthTF) {
+                assignBoard();
                 this.n = setN;
                 this.nTF = true;
             }
         } else {
             if (setN >= MIN_N && setN < this.height && this.heightTF && this.widthTF) {
+                assignBoard();
                 this.n = setN;
                 this.nTF = true;
             }
@@ -64,20 +67,13 @@ public class ConnectN {
         this.widthTF = true;
         this.height = otherBoard.height;
         this.heightTF = true;
+        assignBoard();
         this.n = otherBoard.n;
         this.nTF = true;
         counter++;
         id = counter - 1;
     }
     //FIELDS
-    /**
-     * player one.
-     */
-    Player one = new Player("one");
-    /**
-     * player two.
-     */
-    Player two = new Player("two");
     /**
      * int counts the instances.
      */
@@ -117,7 +113,19 @@ public class ConnectN {
     /**
      * this is the board.
      */
-    Player[][] board = new Player[this.height][this.width];
+    Player[][] board = new Player[width][height];
+    /**
+     * this player one.
+     */
+    private Player player1;
+    /**
+     * player two.
+     */
+    private Player player2;
+    /**
+     * this player won.
+     */
+    private Player winner;
     /**
      * true if height is set.
      */
@@ -134,6 +142,10 @@ public class ConnectN {
      * true if game started.
      */
     private boolean gameOn = false;
+    /**
+     * true if game ends.
+     */
+    private boolean gameOver = false;
     /**
      * ID for the instance / game.
      */
@@ -164,10 +176,13 @@ public class ConnectN {
      * @return false if width is invalid.
      */
     public boolean setWidth(final int setWidth) {
-        //check if game started
+        if (gameOn) {
+            return false;
+        }
         if (setWidth <= MAX_WIDTH && setWidth >= MIN_WIDTH) {
             this.width = setWidth;
             this.widthTF = true;
+            assignBoard();
         } else {
             return false;
         }
@@ -189,10 +204,13 @@ public class ConnectN {
      * @return false if invalid
      */
     public boolean setHeight(final int setHeight) {
-        //check if game started
+        if (gameOn) {
+            return false;
+        }
         if (setHeight <= MAX_HEIGHT && setHeight >= MIN_HEIGHT) {
             this.height = setHeight;
             this.heightTF = true;
+            assignBoard();
         } else {
             return false;
         }
@@ -213,8 +231,6 @@ public class ConnectN {
      * @return false if invalid
      */
     public boolean setN(final int newN) {
-        //height and width must be set
-        //game can't already have been started
         if (gameOn) {
             return false;
         }
@@ -225,16 +241,29 @@ public class ConnectN {
             if (newN >= MIN_N && newN < this.width) {
                 this.n = newN;
                 this.nTF = true;
+                //make board
+                assignBoard();
                 return true;
             }
         } else {
             if (newN >= MIN_N && newN < this.height) {
                 this.n = newN;
                 this.nTF = true;
+                //make board
+                assignBoard();
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * assigns board.
+     */
+    private void assignBoard() {
+        if (this.widthTF && this.heightTF) {
+            this.board = new Player[this.width][this.height];
+        }
     }
     //COMPARE BOARDS
     /**
@@ -243,13 +272,28 @@ public class ConnectN {
      */
     public static boolean compareBoards(final ConnectN... boards) {
         int countThoseBoreds = 0;
+        int countBoard = 0;
+        int countBoardEquals = 0;
         if (boards.length == 0) {
             return false;
         }
-        for (int i = 1; i < boards.length; i++) {
-            ConnectN bored =  boards[i];
-            if (bored.equals(boards[i - 1])) {
-                countThoseBoreds++;
+        for (int i = 0; i < boards.length - 1; i++) {
+            if (boards[i] == null || boards[i + 1] == null) {
+                return false;
+            }
+            if (boards[i].height == boards[i + 1].height && boards[i].width == boards[i + 1].width
+                    && boards[i].n == boards[i + 1].n) {
+                for (int k = 0; k < boards[i].board.length; k++) {
+                    for (int j = 0; j < boards[i].board[k].length; j++) {
+                        if (boards[i].board[k][j] == boards[i + 1].board[k][j]) {
+                            countBoardEquals++;
+                        }
+                        countBoard++;
+                    }
+                }
+                if (countBoard == countBoardEquals) {
+                    countThoseBoreds++;
+                }
             }
         }
         if (countThoseBoreds == boards.length - 1) {
@@ -263,8 +307,24 @@ public class ConnectN {
      * @return false if not equal
      */
     public static boolean compareBoards(final ConnectN firstBoard, final ConnectN secondBoard) {
-        if (firstBoard.equals(secondBoard)) {
-            return true;
+        int countBoard = 0;
+        int countBoardEquals = 0;
+        if (firstBoard == null || secondBoard == null) {
+            return false;
+        }
+        if (firstBoard.height == secondBoard.height && firstBoard.width == secondBoard.width
+            && firstBoard.n == secondBoard.n) {
+            for (int i = 0; i < firstBoard.board.length; i++) {
+                for (int j = 0; j < firstBoard.board[i].length; j++) {
+                    if (firstBoard.board[i][j] == secondBoard.board[i][j]) {
+                        countBoardEquals++;
+                    }
+                    countBoard++;
+                }
+            }
+            if (countBoard == countBoardEquals) {
+                return true;
+            }
         }
         return false;
     }
@@ -300,7 +360,12 @@ public class ConnectN {
      * @return ConnectN instance
      */
     public static ConnectN create(final int setWidth, final int setHeight, final int setN) {
-        return new ConnectN();
+        if (setWidth <= MAX_WIDTH && setWidth >= MIN_WIDTH && setHeight <= MAX_WIDTH && setHeight >= MIN_WIDTH
+                && setN >= MIN_N && (setN < setWidth || setN < setHeight)) {
+            return new ConnectN(setWidth, setHeight, setN);
+        } else {
+            return null;
+        }
     }
     /**
      * @param number amount of instances we wanna make
@@ -311,14 +376,39 @@ public class ConnectN {
      */
     public static ConnectN[] createMany(final int number, final int setWidth, final int setHeight, final int setN) {
         ConnectN[] many = new ConnectN[number];
-        return many;
+        if (number <= 0) {
+            return null;
+        }
+        if (setWidth <= MAX_WIDTH && setWidth >= MIN_WIDTH && setHeight <= MAX_WIDTH && setHeight >= MIN_WIDTH
+                && setN >= MIN_N && (setN < setWidth || setN < setHeight)) {
+            for (int i = 0; i < many.length; i++) {
+                many[i] = new ConnectN(setWidth, setHeight, setN);
+            }
+            return many;
+        } else {
+            return null;
+        }
     }
     //BOARD INTERACTIONS
     /**
      * @return a Player[][]
      */
     public Player[][] getBoard() {
-        return this.board;
+        if (this.board == null || this.height == 0 || this.width == 0) {
+            return null;
+        }
+        Player[][] freshBoard = new Player[this.width][this.height];
+        for (int i = 0; i < this.width; i++) {
+            for (int j = 0; j < this.height; j++) {
+                Player fill = this.board[i][j];
+                if (fill == null) {
+                    freshBoard[i][j] = null;
+                } else {
+                    board[i][j] = new Player(fill);
+                }
+            }
+        }
+        return freshBoard;
     }
     /**
      * @param getX the x value on a 2d array
@@ -326,7 +416,13 @@ public class ConnectN {
      * @return a Player
      */
     public Player getBoardAt(final int getX, final int getY) {
-        return board[getX][getY];
+        if (this.height == 0 || this.width == 0 || this.board == null) {
+            return null;
+        }
+        if (getX < this.width && getX >= 0 && getY < this.height && getY >= 0) {
+            return this.board[getX][getY];
+        }
+        return null;
     }
     /**
      * @param player will get the right game
@@ -335,17 +431,45 @@ public class ConnectN {
      * @return false if invalid
      */
     public boolean setBoardAt(final Player player, final int setX, final int setY) {
-        if (player == null || !this.widthTF || !this.heightTF || !this.nTF) {
+        if (this.gameOver) {
             return false;
         }
-        for (int i = 0; i < width; i++) {
-            if (this.board[setX][i] == one || this.board[setX][i] == two) {
-                continue;
+        if (player == null || this.width == 0 || this.height == 0 || this.n == 0) {
+            return false;
+        }
+        if (this.player1 == null) {
+            this.player1 = player;
+        } else if (this.player2 == null && !player.equals(this.player1)) {
+            this.player2 = player;
+        }
+        if (this.height > setY && setY >= 0 && this.width > setX && setX >= 0 && !gameOver) {
+            if (setY == 0) {
+                boolean notNull = true;
+                if (this.board[setX][setY] == null) {
+                    notNull = false;
+                }
+                if (!notNull && (player.equals(this.player1) || player.equals(this.player2))) {
+                    this.board[setX][setY] = player;
+                    gameOn = true;
+                    return true;
+                }
+                return false;
             } else {
-                this.board[setX][i] = player;
-                return true;
+                boolean isOccupied = true;
+                if (this.board[setX][setY] == null) {
+                    isOccupied = false;
+                }
+                Player placeBelow = this.board[setX][setY - 1];
+                if (!isOccupied && placeBelow != null && (player.equals(this.player1)
+                        || player.equals(this.player2))) {
+                    this.board[setX][setY] = player;
+                    gameOn = true;
+                    return true;
+                }
+                return false;
             }
         }
+        return false;
     }
     /**
      * @param player gets the right game
@@ -353,34 +477,121 @@ public class ConnectN {
      * @return false if invalid
      */
     public boolean setBoardAt(final Player player, final int setX) {
-        int countN = 0;
-        if (player == null || !this.widthTF || !this.heightTF || !this.nTF) {
+        int pointsDown = height - 1;
+        if (gameOver) {
             return false;
         }
-        if (setX > this.height - 1 || setX < 0) {
+        if (player == null || this.width == 0 || this.height == 0 || this.n == 0) {
             return false;
         }
-        for (int i = 0; i < width; i++) {
-            if (this.board[setX][i] == one || this.board[setX][i] == two) {
-                continue;
+        if (this.player1 == null) {
+            this.player1 = player;
+        } else if (this.player2 == null && !player.equals(this.player1)) {
+            this.player2 = player;
+        }
+        while (pointsDown >= 0) {
+            if (board[setX][pointsDown] != null) {
+                pointsDown--;
             } else {
-                this.board[setX][i] = player;
-                this.gameOn = true;
-                return true;
+                break;
             }
         }
-        for (int i = 0; i < this.board.length; i++) {
-            for (int j = 0; j < this.board[i].length; j++) {
-
-            }
-        }
+        board[setX][pointsDown] = player;
+        return true;
     }
     //WINNER
     /**
      * @return the player who won
      */
     public Player getWinner() {
-        return one;
+        int countN = 0;
+        //CHECK WINNER
+        //check the horizontal
+        for (int i = 0; i < this.height; i++) {
+            for (int j = 0; j < this.width - 1; j++) {
+                if (this.board[i][j] == this.board[i][j + 1]) {
+                    countN++;
+                } else {
+                    countN = 0;
+                }
+                if (countN == n - 1) {
+                    this.gameOver = true;
+                    this.winner = this.board[i][j];
+                    break;
+                }
+            }
+            countN = 0;
+            if (this.gameOver) {
+                break;
+            }
+        }
+        //check the vertical
+        for (int i = 0; i < this.width; i++) {
+            for (int j = 0; j < this.height - 1; j++) {
+                if (this.board[j][i] == this.board[j + 1][i]) {
+                    countN++;
+                } else {
+                    countN = 0;
+                }
+                if (countN == n - 1) {
+                    this.gameOver = true;
+                    this.winner = this.board[j][i];
+                    break;
+                }
+            }
+            countN = 0;
+            if (this.gameOver) {
+                break;
+            }
+        }
+        final int startDown = 4;
+        //check the positive sloping diagonal
+        for (int j = this.height - startDown; j > 0; j--) {
+            int i = 0;
+            int temp = j;
+            while (j < this.height - 2) {
+                if (this.board[i][j] == this.board[i + 1][j + 1]) {
+                    countN++;
+                } else {
+                    countN = 0;
+                }
+                if (countN == n - 1) {
+                    this.gameOver = true;
+                    this.winner = this.board[i][j];
+                    break;
+                }
+                i++;
+                j++;
+            }
+            if (this.gameOver) {
+                break;
+            }
+            countN = 0;
+            j = temp;
+        }
+        for (int i = 0; i < this.width - startDown; i++) {
+            int j = 0;
+            while (i < this.width - 2 && j < this.height - 2) {
+                if (this.board[i][j] == this.board[i + 1][j + 1]) {
+                    countN++;
+                } else {
+                    countN = 0;
+                }
+                if (countN == n - 1) {
+                    this.gameOver = true;
+                    this.winner = this.board[i][j];
+                    break;
+                }
+                i++;
+                j++;
+            }
+            if (this.gameOver) {
+                break;
+            }
+            countN = 0;
+        }
+        //check the negatively sloping diagonal
+        return this.winner;
     }
 
 }
